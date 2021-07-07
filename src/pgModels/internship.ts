@@ -1,0 +1,70 @@
+export class Internship {
+    completeInternshipId: number;
+    semesterId: number;
+    companyAddressId: number;
+    workingHours: number;
+    livingCosts: number;
+    internshipRatingId: number;
+    recommend: boolean;
+    orientationId: number;
+    description: string;
+    salary: number;
+    startDate: Date;
+    endDate: Date;
+    tasks: string;
+    operationalArea: string;
+    internshipStateId: number;
+    readingProfId: number;
+    paymentStateId: number;
+    registrationStateId: number;
+    contractStateId: number;
+    reportStateId: number;
+    certificateStateId: number;
+    certificateSignedByInternshipOfficer: Date;
+    certificateSignedByProf: Date;
+    certificateToProf: Date;
+    comment: string;
+    supervisorEmail: string;
+    supervisorName: string;
+    supervisorPhone: string;
+    completed: boolean;
+    approved: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+
+
+    constructor(completeInternshipId: number, companyAddressId: number, workingHours: number, livingCosts: number, internshipRatingId: number, recommend: boolean, orientationId: number, description: string, semesterId: number, salary: number, startDate: Date, endDate: Date, tasks: string, operationalArea: string, internshipStateId: number, readingProfId: number, paymentStateId: number, registrationStateId: number, contractStateId: number, reportStateId: number, certificateStateId: number, certificateSignedByInternshipOfficer: Date, certificateSignedByProf: Date, certificateToProf: Date, comment: string, supervisorEmail: string, supervisorName: string, supervisorPhone: string, completed: boolean, approved: boolean, createdAt: Date, updatedAt: Date) {
+        this.completeInternshipId = completeInternshipId;
+        this.companyAddressId = companyAddressId;
+        this.workingHours = workingHours;
+        this.livingCosts = livingCosts;
+        this.internshipRatingId = internshipRatingId;
+        this.recommend = recommend;
+        this.orientationId = orientationId;
+        this.description = description;
+        this.semesterId = semesterId;
+        this.salary = salary;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.tasks = tasks;
+        this.operationalArea = operationalArea;
+        this.internshipStateId = internshipStateId;
+        this.readingProfId = readingProfId;
+        this.paymentStateId = paymentStateId;
+        this.registrationStateId = registrationStateId;
+        this.contractStateId = contractStateId;
+        this.reportStateId = reportStateId;
+        this.certificateStateId = certificateStateId;
+        this.certificateSignedByInternshipOfficer = certificateSignedByInternshipOfficer;
+        this.certificateSignedByProf = certificateSignedByProf;
+        this.certificateToProf = certificateToProf;
+        this.comment = comment;
+        this.supervisorEmail = supervisorEmail;
+        this.supervisorName = supervisorName;
+        this.supervisorPhone = supervisorPhone;
+        this.completed = completed;
+        this.approved = approved;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+    }
+}

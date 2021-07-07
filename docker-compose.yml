@@ -1,0 +1,25 @@
+version: '3.7'
+
+services:
+
+  db-postgres:
+    image: postgres:alpine
+    environment:
+      - POSTGRES_PASSWORD=pass
+    volumes:
+      - ./init:/docker-entrypoint-initdb.d
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+
+  db-mongo:
+    image: mongo:bionic
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  postgres-data:
+  mongo-data:
+
