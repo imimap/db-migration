@@ -1,29 +1,32 @@
-import { InternshipModule } from "../mongooseModels/internshipModule";
 import { CompleteInternship } from "../pgModels/completeInternship";
 import createProgressLogger from "../fancyPrinter";
 import { Types } from "mongoose";
+import { InternshipModule } from "../mongooseModels/internshipModule";
 
-export default async function convertInternshipModules(completeInternships: CompleteInternship[], semesters: string[]): Promise<Types.ObjectId[]> {
+export default async function convertInternshipModules(completeInternships: CompleteInternship[], semesters: string[]): Promise<{
+    internships: Map<number, Types.ObjectId>,
+    userMap: Map<number, Types.ObjectId>
+}> {
     let counter = 0;
-    const log = createProgressLogger("Internship Module", completeInternships.filter(c => c !== undefined).length);
-    const internshipModules = [];
+    const log = createProgressLogger("Internship Module", completeInternships.length);
+    const internshipModules = new Map<number, Types.ObjectId>();
+    const internshipUserMap = new Map<number, Types.ObjectId>();
 
-    for (let i = 0; i < completeInternships.length; ++i) {
-        const internship = completeInternships[i];
-        if (internship === undefined)
-            continue;
-
+    for (const internship of completeInternships) {
         const internshipModule = {
+            oldId: internship.id,
             aepPassed: internship.aep,
             inSemester: semesters[internship.semesterId],
-            inSemesterOfStudy: internship.semesterOfStudy
+            inSemesterOfStudy: internship.semesterOfStudy,
+            internships: []
         };
 
         const internshipModuleDoc = await InternshipModule.create(internshipModule);
-        internshipModules[i] = internshipModuleDoc.id;
+        internshipModules.set(internship.id, internshipModuleDoc.id);
+        internshipUserMap.set(internship.studentId, internshipModuleDoc.id);
 
         log(++counter);
     }
 
-    return internshipModules;
+    return { internships: internshipModules, userMap: internshipUserMap };
 }

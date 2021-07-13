@@ -1,20 +1,16 @@
-import { IInternship, Internship } from "../mongooseModels/internship";
 import { Internship as OldInternship } from "../pgModels/internship";
 import createProgressLogger from "../fancyPrinter";
 import { Types } from "mongoose";
 import { isValidEmail, normalizeEmail } from "../helpers/emailAddressHelper";
+import { Internship } from "../mongooseModels/internship";
 import { InternshipModule } from "../mongooseModels/internshipModule";
 
-export default async function convertInternships(internships: OldInternship[], companyIds: Types.ObjectId[], internshipModuleIds: Types.ObjectId[]): Promise<IInternship[]> {
+export default async function convertInternships(internships: OldInternship[], companies: Map<number, Types.ObjectId>, internshipModules: Map<number, Types.ObjectId>): Promise<Map<number, Types.ObjectId>> {
     let counter = 0;
-    const log = createProgressLogger("Internship", internships.filter(i => i !== undefined).length);
-    const newInternships = [];
+    const log = createProgressLogger("Internship", internships.length);
+    const newInternships = new Map<number, Types.ObjectId>();
 
-    for (let i = 0; i < internships.length; ++i) {
-        const internship = internships[i];
-        if (internship === undefined)
-            continue;
-
+    for (const internship of internships) {
         const supervisor: any = {};
 
         if (internship.supervisorName)
@@ -24,7 +20,8 @@ export default async function convertInternships(internships: OldInternship[], c
             supervisor.emailAddress = internship.supervisorEmail;
 
         const newInternship = {
-            company: companyIds[internship.companyAddressId],
+            oldId: internship.id,
+            company: companies.get(internship.companyAddressId),
             description: internship.description,
             tasks: internship.tasks,
             operationalArea: internship.operationalArea,
@@ -39,13 +36,13 @@ export default async function convertInternships(internships: OldInternship[], c
         };
 
         const internshipDoc = await Internship.create(newInternship);
-        newInternships[i] = internshipDoc.id;
+        newInternships.set(internship.id, internshipDoc.id);
 
         // Add internship to internship module
-        const internshipModule = await InternshipModule.findById(internshipModuleIds[internship.completeInternshipId]);
-        if (internshipModule === null)
+        const internshipModule = await InternshipModule.findById(internshipModules.get(internship.completeInternshipId));
+        if (!internshipModule)
             throw new Error(`Internship Module with id ${internshipDoc.id.toString()} not found`);
-        internshipModule.internships.push(internshipDoc.id);
+        internshipModule.internships?.push(internshipDoc.id);
         await internshipModule.save();
 
         log(++counter);

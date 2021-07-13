@@ -1,4 +1,5 @@
 export class CompleteInternship {
+    id: number;
     semesterId: number;
     studentId: number;
     semesterOfStudy: number;
@@ -7,7 +8,8 @@ export class CompleteInternship {
     createdAt: Date;
     updatedAt: Date;
 
-    constructor(semesterId: number, studentId: number, semesterOfStudy: number, aep: boolean, passed: boolean, createdAt: Date, updatedAt: Date) {
+    constructor(id: number, semesterId: number, studentId: number, semesterOfStudy: number, aep: boolean, passed: boolean, createdAt: Date, updatedAt: Date) {
+        this.id = id;
         this.semesterId = semesterId;
         this.studentId = studentId;
         this.semesterOfStudy = semesterOfStudy;

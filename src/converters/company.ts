@@ -1,27 +1,25 @@
-import { Company } from "../mongooseModels/company";
 import { Company as OldCompany } from "../pgModels/company";
 import { CompanyAddress as OldCompanyAddress } from "../pgModels/companyAddress";
 import { getCompanySize } from "../helpers/companySizes";
 import { getLanguage } from "../helpers/isoLanguages";
 import createProgressLogger from "../fancyPrinter";
 import { Types } from "mongoose";
+import { Company } from "../mongooseModels/company";
 
-export default async function convertCompanies(companies: OldCompany[], companyAddresses: OldCompanyAddress[]): Promise<Types.ObjectId[]> {
+export default async function convertCompanies(companies: OldCompany[], companyAddresses: OldCompanyAddress[]): Promise<Map<number, Types.ObjectId>> {
     let counter = 0;
-    const log = createProgressLogger("Company", companyAddresses.filter(c => c !== undefined).length);
-    const newCompanies = [];
+    const log = createProgressLogger("Company", companyAddresses.length);
+    const newCompanies = new Map<number, Types.ObjectId>();
 
-    for (let i = 0; i < companyAddresses.length; ++i) {
-        const companyAddress = companyAddresses[i];
-        if (companyAddress === undefined)
-            continue;
-
-        const company = companies[companyAddress.companyId];
+    for (const companyAddress of companyAddresses) {
+        const company = companies.find(c => c.id === companyAddress.companyId);
+        if (!company)
+            throw new Error(`Company with id ${companyAddress.companyId} not found`);
 
         const newCompanyAddress = {
             street: companyAddress.street,
-            zip: companyAddress.zip,
-            city: companyAddress.city,
+            zip: companyAddress.zip.trim().length > 0 ? companyAddress.zip : "unknown",
+            city: companyAddress.city.trim().length > 0 ? companyAddress.city : "unknown",
             country: companyAddress.country,
             coordinates: {
                 latitude: companyAddress.latitude,
@@ -30,6 +28,7 @@ export default async function convertCompanies(companies: OldCompany[], companyA
         };
 
         const newCompany: any = {
+            oldId: company.id,
             address: newCompanyAddress,
             comment: company.comment,
             companyName: company.name,
@@ -49,7 +48,7 @@ export default async function convertCompanies(companies: OldCompany[], companyA
             newCompany.size = getCompanySize(company.numberEmployees);
 
         const companyDoc = await Company.create(newCompany);
-        newCompanies[i] = companyDoc.id;
+        newCompanies.set(company.id, companyDoc.id);
 
         log(++counter);
     }

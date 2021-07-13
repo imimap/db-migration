@@ -6,9 +6,10 @@ export async function loadCompanies(database: Client): Promise<Company[]> {
 
     const result = await database.query("SELECT * FROM companies");
     for (const row of result.rows) {
-        companies[row.id] = new Company(
+        companies.push(new Company(
+            Number.parseInt(row.id),
             row.name,
-            row.number_employees,
+            Number.parseInt(row.number_employees) || null,
             row.industry,
             row.website,
             new Date(row.created_at),
@@ -16,7 +17,7 @@ export async function loadCompanies(database: Client): Promise<Company[]> {
             row.main_language,
             row.excluded_from_search,
             row.comment
-        );
+        ));
     }
 
     return companies;

@@ -6,28 +6,47 @@ export async function loadInternships(database: Client): Promise<Internship[]> {
 
     const result = await database.query("SELECT * FROM internships");
     for (const row of result.rows) {
-        internships[row.id] = new Internship(
-            row.complete_internship_id,
-            row.company_address_id,
-            row.working_hours,
-            row.living_costs,
-            row.internship_rating_id,
+        // Skip if start or end date missing
+        if (row.startDate === null || row.end_date === null)
+            continue;
+
+        let startDate = new Date(row.start_date);
+        let endDate = new Date(row.end_date);
+
+        // Move end date one month back if start and end date are equal
+        if (startDate.getTime() === endDate.getTime())
+            endDate.setMonth(endDate.getMonth() + 1)
+
+        // Swap dates if start date is past end date
+        if (startDate.getTime() > endDate.getTime()) {
+            let temp = startDate;
+            startDate = endDate;
+            endDate = temp;
+        }
+
+        internships.push(new Internship(
+            Number.parseInt(row.id),
+            Number.parseInt(row.complete_internship_id),
+            Number.parseInt(row.company_address_id),
+            Number.parseInt(row.working_hours) || 0,
+            Number.parseInt(row.living_costs) || 0,
+            Number.parseInt(row.internship_rating_id),
             row.recommend,
-            row.orientation_id,
+            Number.parseInt(row.orientation_id),
             row.description,
-            row.semester_id,
-            row.salary,
-            new Date(row.start_date),
-            new Date(row.end_date),
+            Number.parseInt(row.semester_id),
+            Number.parseInt(row.salary) || 0,
+            startDate,
+            endDate,
             row.tasks,
             row.operational_area,
-            row.internship_state_id,
-            row.reading_prof_id,
-            row.payment_state_id,
-            row.registration_state_id,
-            row.contract_state_id,
-            row.report_state_id,
-            row.certificate_state_id,
+            Number.parseInt(row.internship_state_id),
+            Number.parseInt(row.reading_prof_id),
+            Number.parseInt(row.payment_state_id),
+            Number.parseInt(row.registration_state_id),
+            Number.parseInt(row.contract_state_id),
+            Number.parseInt(row.report_state_id),
+            Number.parseInt(row.certificate_state_id),
             new Date(row.certificate_signed_by_internship_officer),
             new Date(row.certificate_signed_by_prof),
             new Date(row.certificate_to_prof),
@@ -39,7 +58,7 @@ export async function loadInternships(database: Client): Promise<Internship[]> {
             row.approved,
             new Date(row.created_at),
             new Date(row.updated_at)
-        );
+        ));
     }
 
     return internships;

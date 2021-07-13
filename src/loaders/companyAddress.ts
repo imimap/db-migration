@@ -6,19 +6,20 @@ export async function loadCompanyAddresses(database: Client): Promise<CompanyAdd
 
     const result = await database.query("SELECT * FROM company_addresses");
     for (const row of result.rows) {
-        companyAddresses[row.id] = new CompanyAddress(
-            row.company_id,
+        companyAddresses.push(new CompanyAddress(
+            Number.parseInt(row.id),
+            Number.parseInt(row.company_id),
             row.street,
             row.zip,
             row.city,
             row.country,
             row.phone,
             row.fax,
-            row.latitude,
-            row.longitude,
+            Number.parseFloat(row.latitude) || 0,
+            Number.parseFloat(row.longitude) || 0,
             new Date(row.created_at),
             new Date(row.updated_at)
-        );
+        ));
     }
 
     return companyAddresses;

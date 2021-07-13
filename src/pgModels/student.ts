@@ -1,4 +1,5 @@
 export class Student {
+    id: number;
     enrollmentNumber: string;
     lastName: string;
     firstName: string;
@@ -9,7 +10,8 @@ export class Student {
     createdAt: Date;
     updatedAt: Date;
 
-    constructor(enrollmentNumber: string, lastName: string, firstName: string, birthday: Date, birthplace: string, email: string, privateEmail: string, createdAt: Date, updatedAt: Date) {
+    constructor(id: number, enrollmentNumber: string, lastName: string, firstName: string, birthday: Date, birthplace: string, email: string, privateEmail: string, createdAt: Date, updatedAt: Date) {
+        this.id = id;
         this.enrollmentNumber = enrollmentNumber;
         this.lastName = lastName;
         this.firstName = firstName;

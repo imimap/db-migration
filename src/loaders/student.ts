@@ -6,7 +6,8 @@ export async function loadStudents(database: Client): Promise<Student[]> {
 
     const result = await database.query("SELECT * FROM students");
     for (const row of result.rows) {
-        students[row.id] = new Student(
+        students.push(new Student(
+            Number.parseInt(row.id),
             row.enrolment_number,
             row.last_name,
             row.first_name,
@@ -16,7 +17,7 @@ export async function loadStudents(database: Client): Promise<Student[]> {
             row.private_email,
             new Date(row.created_at),
             new Date(row.updated_at)
-        );
+        ));
     }
 
     return students;

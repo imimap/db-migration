@@ -1,13 +1,10 @@
-// todo : complete!
-// https://github.com/imimap/imimap/blob/master/app/models/semester_helper.rb
-// https://github.com/imimap/imimap/blob/master/app/models/semester.rb
 class Season {
-  static SUMMER = (year: number) => {
-    return new Season("SS", new Date(year, 4, 1));
+  static SUMMER = (year: number): Season => {
+    return new Season("SS", new Date(Date.UTC(year, 4, 1)));
   };
 
-  static WINTER = (year: number) => {
-    return new Season("WS", new Date(year, 10, 1));
+  static WINTER = (year: number): Season => {
+    return new Season("WS", new Date(Date.UTC(year, 10, 1)));
   };
 
   readonly #abbrv: string;
@@ -32,11 +29,11 @@ class Season {
     return this.#year;
   }
 
-  toString() {
+  toString(): string {
     return this.#abbrv + this.startDate.getUTCFullYear();
   }
 
-  equals(otherSeason: Season) {
+  equals(otherSeason: Season): boolean {
     return this.#abbrv === otherSeason.abbrv && this.#year === otherSeason.year;
   }
 }
@@ -50,11 +47,11 @@ export class Semester {
 
   /* Navigation */
 
-  next() {
+  next(): Semester {
     return Semester.getSemesterAfter(this);
   }
 
-  previous() {
+  previous(): Semester {
     const currentSeason: Season = this.#season;
     const currentYear: number = currentSeason.year;
 
@@ -71,7 +68,7 @@ export class Semester {
 
   /* Creators */
 
-  static get(date: Date) {
+  static get(date: Date): Semester {
     const utcFullYear = date.getUTCFullYear();
     let season = Season.SUMMER(utcFullYear);
 
@@ -84,15 +81,15 @@ export class Semester {
     return new Semester(season);
   }
 
-  static getCurrent() {
+  static getCurrent(): Semester {
     return this.get(new Date());
   }
 
-  static getUpcoming() {
+  static getUpcoming(): Semester {
     return Semester.getSemesterAfter(Semester.getCurrent());
   }
 
-  static getSemesterAfter(currentSemester: Semester) {
+  static getSemesterAfter(currentSemester: Semester): Semester {
     const currentSeason: Season = currentSemester.#season;
     const currentYear: number = currentSeason.year;
 
@@ -109,7 +106,37 @@ export class Semester {
 
   /* Helpers */
 
-  toString() {
+  toString(): string {
     return this.#season.toString();
+  }
+
+  startDate(): Date {
+    return this.#season.startDate;
+  }
+
+  static parseString(semesterString: string): Semester {
+    const yearString = semesterString.match(/20[0-9]{2}$/);
+    if (!yearString) throw "Semester is not a valid string. Needs to give full year.";
+    const yearNumber = parseInt(yearString[0]);
+
+    if (semesterString.includes(Season.SUMMER(yearNumber).abbrv))
+      return new Semester(Season.SUMMER(yearNumber));
+    else if (semesterString.includes(Season.WINTER(yearNumber).abbrv))
+      return new Semester(Season.WINTER(yearNumber));
+    else throw "Semester is not a valid string. Needs to indicate season.";
+  }
+
+  static sanitizeSemesterString(semesterString: string): string {
+    const semester = Semester.parseString(semesterString);
+    return semester.toString();
+  }
+
+  static isValidSemesterString(semesterString: string): boolean {
+    try {
+      Semester.parseString(semesterString);
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 }

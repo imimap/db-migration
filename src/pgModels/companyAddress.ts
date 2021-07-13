@@ -1,4 +1,5 @@
 export class CompanyAddress {
+    id: number;
     companyId: number;
     street: string;
     zip: string;
@@ -11,7 +12,8 @@ export class CompanyAddress {
     createdAt: Date;
     updatedAt: Date;
 
-    constructor(companyId: number, street: string, zip: string, city: string, country: string, phone: string, fax: string, latitude: number, longitude: number, createdAt: Date, updatedAt: Date) {
+    constructor(id: number, companyId: number, street: string, zip: string, city: string, country: string, phone: string, fax: string, latitude: number, longitude: number, createdAt: Date, updatedAt: Date) {
+        this.id = id;
         this.companyId = companyId;
         this.street = street;
         this.zip = zip;

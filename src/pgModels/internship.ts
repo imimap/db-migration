@@ -1,4 +1,5 @@
 export class Internship {
+    id: number;
     completeInternshipId: number;
     semesterId: number;
     companyAddressId: number;
@@ -33,7 +34,8 @@ export class Internship {
     updatedAt: Date;
 
 
-    constructor(completeInternshipId: number, companyAddressId: number, workingHours: number, livingCosts: number, internshipRatingId: number, recommend: boolean, orientationId: number, description: string, semesterId: number, salary: number, startDate: Date, endDate: Date, tasks: string, operationalArea: string, internshipStateId: number, readingProfId: number, paymentStateId: number, registrationStateId: number, contractStateId: number, reportStateId: number, certificateStateId: number, certificateSignedByInternshipOfficer: Date, certificateSignedByProf: Date, certificateToProf: Date, comment: string, supervisorEmail: string, supervisorName: string, supervisorPhone: string, completed: boolean, approved: boolean, createdAt: Date, updatedAt: Date) {
+    constructor(id: number, completeInternshipId: number, companyAddressId: number, workingHours: number, livingCosts: number, internshipRatingId: number, recommend: boolean, orientationId: number, description: string, semesterId: number, salary: number, startDate: Date, endDate: Date, tasks: string, operationalArea: string, internshipStateId: number, readingProfId: number, paymentStateId: number, registrationStateId: number, contractStateId: number, reportStateId: number, certificateStateId: number, certificateSignedByInternshipOfficer: Date, certificateSignedByProf: Date, certificateToProf: Date, comment: string, supervisorEmail: string, supervisorName: string, supervisorPhone: string, completed: boolean, approved: boolean, createdAt: Date, updatedAt: Date) {
+        this.id = id;
         this.completeInternshipId = completeInternshipId;
         this.companyAddressId = companyAddressId;
         this.workingHours = workingHours;
