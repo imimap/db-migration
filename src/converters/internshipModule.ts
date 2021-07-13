@@ -1,9 +1,16 @@
 import { CompleteInternship } from "../pgModels/completeInternship";
 import createProgressLogger from "../fancyPrinter";
 import { Types } from "mongoose";
-import { InternshipModule } from "../mongooseModels/internshipModule";
+import { InternshipModule, InternshipModuleStatuses } from "../mongooseModels/internshipModule";
+import { Postponement } from "../pgModels/postponement";
+import { imimapAdmin } from "../helpers/imimapAsAdminHelper";
+import { IEvent } from "../mongooseModels/event";
 
-export default async function convertInternshipModules(completeInternships: CompleteInternship[], semesters: string[]): Promise<{
+export default async function convertInternshipModules(
+    completeInternships: CompleteInternship[],
+    semesters: string[],
+    postponements: Postponement[]
+): Promise<{
     internships: Map<number, Types.ObjectId>,
     userMap: Map<number, Types.ObjectId>
 }> {
@@ -11,14 +18,30 @@ export default async function convertInternshipModules(completeInternships: Comp
     const log = createProgressLogger("Internship Module", completeInternships.length);
     const internshipModules = new Map<number, Types.ObjectId>();
     const internshipUserMap = new Map<number, Types.ObjectId>();
+    const admin = await imimapAdmin;
 
     for (const internship of completeInternships) {
+        const postponementList = postponements
+            .filter(p => p.studentId === internship.studentId)
+            .map(p => ({
+                timestamp: p.timestamp.getTime(),
+                creator: admin._id,
+                changes: {
+                    newSemester: semesters[p.semesterId],
+                    newSemesterOfStudy: p.semesterOfStudy
+                },
+                accept: p.approved,
+                comment: p.reason
+            } as IEvent));
+
         const internshipModule = {
             oldId: internship.id,
             aepPassed: internship.aep,
             inSemester: semesters[internship.semesterId],
             inSemesterOfStudy: internship.semesterOfStudy,
-            internships: []
+            internships: [],
+            events: postponementList,
+            status: getInternshipModuleStatus(internship, postponementList)
         };
 
         const internshipModuleDoc = await InternshipModule.create(internshipModule);
@@ -29,4 +52,11 @@ export default async function convertInternshipModules(completeInternships: Comp
     }
 
     return { internships: internshipModules, userMap: internshipUserMap };
+}
+
+function getInternshipModuleStatus(internship: CompleteInternship, postponements: IEvent[]) {
+    const latestRequest = postponements.sort((l, r) => (l.timestamp ?? 0) - (r.timestamp ?? 0))[0];
+    if (latestRequest?.accept === false)
+        return InternshipModuleStatuses.POSTPONEMENT_REQUESTED;
+    return internship.passed ? InternshipModuleStatuses.PASSED : InternshipModuleStatuses.PLANNED;
 }

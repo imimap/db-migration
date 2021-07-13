@@ -13,6 +13,7 @@ import convertInternships from "./converters/internship";
 import convertUsers from "./converters/user";
 import { loadUsers } from "./loaders/user";
 import { loadUserCompanies } from "./loaders/userCompany";
+import { loadPostponements } from "./loaders/postponement";
 
 // Load db config from .env file
 config();
@@ -52,7 +53,8 @@ async function migrate(db: Client) {
     // Migrate internship modules
     const completeInternships = await loadCompleteInternships(db);
     const semesters = await loadSemesters(db);
-    const internshipModuleIdMaps = await convertInternshipModules(completeInternships, semesters);
+    const postponements = await loadPostponements(db);
+    const internshipModuleIdMaps = await convertInternshipModules(completeInternships, semesters, postponements);
 
     // Migrate internships
     const internships = await loadInternships(db);
