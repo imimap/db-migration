@@ -14,6 +14,9 @@ import convertUsers from "./converters/user";
 import { loadUsers } from "./loaders/user";
 import { loadUserCompanies } from "./loaders/userCompany";
 import { loadPostponements } from "./loaders/postponement";
+import { loadProgrammingLanguages } from "./loaders/programmingLanguage";
+import { loadInternshipsProgrammingLanguages } from "./loaders/internshipProgrammingLanguage";
+import { loadPaymentStates } from "./loaders/paymentState";
 
 // Load db config from .env file
 config();
@@ -58,7 +61,17 @@ async function migrate(db: Client) {
 
     // Migrate internships
     const internships = await loadInternships(db);
-    const internshipIdMap = await convertInternships(internships, companyIdMap, internshipModuleIdMaps.internships);
+    const programmingLanguages = await loadProgrammingLanguages(db);
+    const internshipsProgrammingLanguages = await loadInternshipsProgrammingLanguages(db);
+    const paymentStates = await loadPaymentStates(db);
+    const internshipIdMap = await convertInternships(
+        internships,
+        companyIdMap,
+        internshipModuleIdMaps.internships,
+        programmingLanguages,
+        internshipsProgrammingLanguages,
+        paymentStates
+    );
 
     // Migrate students
     const users = await loadUsers(db);

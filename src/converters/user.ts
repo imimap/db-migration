@@ -13,7 +13,7 @@ export default async function convertUsers(
     internshipModules: Map<number, Types.ObjectId>
 ): Promise<Map<number, Types.ObjectId>> {
     let counter = 0;
-    const log = createProgressLogger("Company", users.length);
+    const log = createProgressLogger("User", users.length);
     const newUsers = new Map<number, Types.ObjectId>();
     const skippedUsers = new Map<number, string>();
 
@@ -24,11 +24,13 @@ export default async function convertUsers(
             const matches = /s0([0-9]{6})@htw-berlin.de/.exec(user.email);
             if (!matches) {
                 skippedUsers.set(user.id, "student profile not found");
+                log(++counter);
                 continue;
             }
             student = students.find(s => s.enrollmentNumber === matches[1]);
             if (!student) {
                 skippedUsers.set(user.id, "student profile not found");
+                log(++counter);
                 continue;
             }
         }
@@ -54,6 +56,7 @@ export default async function convertUsers(
         } catch (e) {
             if (e.message.indexOf("duplicate key error collection: imimap.users index: emailAddress") !== 0) {
                 skippedUsers.set(user.id, "duplicate email address");
+                log(++counter);
                 continue;
             } else
                 throw e;
@@ -61,7 +64,7 @@ export default async function convertUsers(
 
         log(++counter);
     }
-    console.log("\nSkipped users: ", skippedUsers);
+    console.log("Skipped users:", skippedUsers);
 
     return newUsers;
 }
