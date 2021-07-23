@@ -13,9 +13,11 @@ export default async function convertCompanies(companies: OldCompany[], companyA
 
     for (const companyAddress of companyAddresses) {
         const company = companies.find(c => c.id === companyAddress.companyId);
+        // Skip addresses which don't have an associated company
         if (!company)
             throw new Error(`Company with id ${companyAddress.companyId} not found`);
 
+        // Create new address model
         const newCompanyAddress = {
             street: companyAddress.street,
             zip: companyAddress.zip.trim().length > 0 ? companyAddress.zip : "unknown",
@@ -27,6 +29,7 @@ export default async function convertCompanies(companies: OldCompany[], companyA
             }
         };
 
+        // Create new company model
         const newCompany: any = {
             oldId: company.id,
             address: newCompanyAddress,
@@ -36,6 +39,7 @@ export default async function convertCompanies(companies: OldCompany[], companyA
             industry: company.industry
         };
 
+        // Add optional properties
         if (company.website) {
             company.website = company.website.trim();
             if (!company.website.startsWith("http"))

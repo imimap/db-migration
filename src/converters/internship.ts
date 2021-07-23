@@ -6,7 +6,6 @@ import { Internship, InternshipStatuses } from "../mongooseModels/internship";
 import { InternshipModule } from "../mongooseModels/internshipModule";
 import { InternshipProgrammingLanguage } from "../pgModels/internshipProgrammingLanguage";
 
-const stateMap = new Map<string, number>();
 
 export default async function convertInternships(
     internships: OldInternship[],
@@ -19,19 +18,23 @@ export default async function convertInternships(
     let counter = 0;
     const log = createProgressLogger("Internship", internships.length);
     const newInternships = new Map<number, Types.ObjectId>();
+    // State map is used for logging details about the migrated internships
+    const stateMap = new Map<string, number>();
 
     for (const internship of internships) {
+        // Create supervisor model
         const supervisor: any = {};
-
         if (internship.supervisorName)
             supervisor.name = internship.supervisorName;
         if (internship.supervisorEmail && isValidEmail(normalizeEmail(internship.supervisorEmail)))
             supervisor.emailAddress = internship.supervisorEmail;
 
+        // Map programming languages from ids to name strings
         const langs = internshipsProgrammingLangs
             .filter(i => i.internshipId === internship.id)
             .map(i => programmingLanguages[i.programmingLanguageId]);
 
+        // Get the current state of the internship
         const status = getInternshipStatus(internship);
         stateMap.set(status.valueOf(), (stateMap.get(status.valueOf()) ?? 0) + 1);
 

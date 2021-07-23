@@ -15,6 +15,7 @@ export default async function convertUsers(
     let counter = 0;
     const log = createProgressLogger("User", users.length);
     const newUsers = new Map<number, Types.ObjectId>();
+    // Used for logging details about users skipped due to import errors
     const skippedUsers = new Map<number, string>();
 
     for (const user of users) {
@@ -35,8 +36,10 @@ export default async function convertUsers(
             }
         }
 
+        // Get previous internship search results for users
         const internshipsSeen = companiesSeen.filter(c => c.userId === user.id).map(c => companies.get(c.companyId));
 
+        // Create the new user
         const newUser = {
             oldId: user.id,
             firstName: student.firstName,
@@ -54,6 +57,7 @@ export default async function convertUsers(
             const userDoc = await User.create(newUser);
             newUsers.set(user.id, userDoc.id);
         } catch (e) {
+            // Skip duplicate email addresses
             if (e.message.indexOf("duplicate key error collection: imimap.users index: emailAddress") !== 0) {
                 skippedUsers.set(user.id, "duplicate email address");
                 log(++counter);

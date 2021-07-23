@@ -21,6 +21,7 @@ export default async function convertInternshipModules(
     const admin = await imimapAdmin;
 
     for (const internship of completeInternships) {
+        // Get postponement requests
         const postponementList = postponements
             .filter(p => p.studentId === internship.studentId)
             .map(p => ({
