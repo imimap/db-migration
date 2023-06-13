@@ -15,7 +15,7 @@ services:
   db-mongo:
     image: mongo:bionic
     ports:
-      - "27017:27017"
+      - "27019:27017"
     volumes:
       - mongo-data:/data/db
 

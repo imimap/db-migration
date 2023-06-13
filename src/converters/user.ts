@@ -103,7 +103,10 @@ export async function createUsers(
         let student = students.find(s => (s.id === studentID));
         if (!student) {
             skippedUsers.set(studentID, "student profile not found");
-            log(++counter);
+            continue;
+        }
+        if (!(student.firstName && student.lastName)) {
+            skippedUsers.set(studentID, "student Name not given, skipped");
             continue;
         }
 

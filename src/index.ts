@@ -30,7 +30,7 @@ async function run() {
     const db = new Client();
     await db.connect();
     // Connect to MongoDB
-    await connect("mongodb://localhost:27017/imimap", {
+    await connect("mongodb://localhost:27019/imimap", {
         useNewUrlParser: true,
         useUnifiedTopology: true,
         useCreateIndex: true
@@ -91,7 +91,7 @@ async function migrate(db: Client) {
     }
     for(let entry of internshipModuleIdMaps.userMap.keys()){
         let student = students.find(s => (s.id === entry));
-        console.log(student);
+        //console.log(student);
     }
     
 
