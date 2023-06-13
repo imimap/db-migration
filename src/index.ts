@@ -10,13 +10,14 @@ import { connect, disconnect } from "mongoose";
 import convertInternshipModules from "./converters/internshipModule";
 import { loadSemesters } from "./loaders/semester";
 import convertInternships from "./converters/internship";
-import convertUsers from "./converters/user";
+import convertUsers, { createUsers } from "./converters/user";
 import { loadUsers } from "./loaders/user";
 import { loadUserCompanies } from "./loaders/userCompany";
 import { loadPostponements } from "./loaders/postponement";
 import { loadProgrammingLanguages } from "./loaders/programmingLanguage";
 import { loadInternshipsProgrammingLanguages } from "./loaders/internshipProgrammingLanguage";
 import { loadPaymentStates } from "./loaders/paymentState";
+import { InternshipModule } from "./mongooseModels/internshipModule";
 
 // Load db config from .env file
 config();
@@ -48,6 +49,10 @@ async function run() {
 }
 
 async function migrate(db: Client) {
+    const users = await loadUsers(db);
+    const students = await loadStudents(db);
+    const userCompanies = await loadUserCompanies(db);
+
     // Migrate companies
     const companies = await loadCompanies(db);
     const companyAddresses = await loadCompanyAddresses(db);
@@ -73,9 +78,21 @@ async function migrate(db: Client) {
         paymentStates
     );
 
-    // Migrate students
-    const users = await loadUsers(db);
-    const students = await loadStudents(db);
-    const userCompanies = await loadUserCompanies(db);
-    const userMap = await convertUsers(users, students, userCompanies, companyIdMap, internshipModuleIdMaps.userMap);
+    // Migrate students, DS the users where very uncomplete, many students without a user??
+    // const userMap = await convertUsers(users, students, userCompanies, companyIdMap, internshipModuleIdMaps.userMap);
+    // DS DEcided to create a user from the student, when there was a student, an completeModule with at least one 
+    // internship in it...
+    const userMap = await createUsers(users, students, userCompanies, companyIdMap, internshipModuleIdMaps.userMap);
+    //Remove internshipModules for which NO user was found
+    console.log(internshipModuleIdMaps);
+    for(let entry of internshipModuleIdMaps.userMap.values()){
+        let e = await InternshipModule.findById(entry)
+        //console.log(e);
+    }
+    for(let entry of internshipModuleIdMaps.userMap.keys()){
+        let student = students.find(s => (s.id === entry));
+        console.log(student);
+    }
+    
+
 }
