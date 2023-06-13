@@ -22,4 +22,7 @@ services:
 volumes:
   postgres-data:
   mongo-data:
+    external: true
+    name: imimap21_db-data
+
 

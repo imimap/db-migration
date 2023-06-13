@@ -3,7 +3,7 @@ import { IPdfDocument, PdfDocument, PdfDocumentSchema } from "./pdfDocument";
 import { Semester } from "../helpers/semesterHelper";
 import { imimapAdmin } from "../helpers/imimapAsAdminHelper";
 import { User } from "./user";
-import { EventSchema, IEvent } from "./event";
+import { EventSchema, EventTypes, IEvent } from "./event";
 import { IInternship, InternshipStatuses } from "./internship";
 
 export enum InternshipModuleStatuses {
@@ -36,6 +36,13 @@ export interface IInternshipModule extends Document {
     acceptPostponement(creator: Types.ObjectId, reason?: string): Promise<IInternshipModule>;
 
     rejectPostponement(creator: Types.ObjectId, reason?: string): Promise<IInternshipModule>;
+
+  editPostponement(
+    creator: Types.ObjectId,
+    updatedProps: Record<string, unknown>
+  ): Promise<IInternshipModule>;
+
+  getRecentPostponementRequest(): IEvent;
 
     passAep(creator: Types.ObjectId): Promise<IInternshipModule>;
 
@@ -73,7 +80,10 @@ const InternshipModuleSchema = new Schema<IInternshipModule>({
     },
     inSemester: String,
     inSemesterOfStudy: Number,
-    aepPassed: Boolean,
+  aepPassed: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 /*******************/
@@ -83,7 +93,8 @@ InternshipModuleSchema.methods.plan = async function () {
     const defaultSemester = Semester.getUpcoming().toString();
     const defaultSemesterOfStudy = 4;
     this.events.push({
-        creator: (await imimapAdmin)._id,
+    type: EventTypes.INTERNSHIP_MODULE_UPDATE,
+    creator: (await imimapAdmin)._id,
         accept: true,
         changes: {
             newSemester: defaultSemester,
@@ -116,6 +127,7 @@ InternshipModuleSchema.methods.requestPostponement = async function (
         throw new Error("SemesterOfStudy is not valid. Needs to be a positive number.");
 
     this.events.push({
+    type: EventTypes.INTERNSHIP_MODULE_POSTPONEMENT,
         creator: creator,
         changes: {
             newSemester: newSemester,
@@ -136,21 +148,23 @@ InternshipModuleSchema.methods.acceptPostponement = async function (
     const user = await User.findById(creator);
     if (!user?.isAdmin) throw new Error("Only Admins may accept a postponement.");
 
+  const recentPostponementRequest = this.getRecentPostponementRequest();
+  this.inSemester = recentPostponementRequest.changes?.newSemester as string;
+  this.inSemesterOfStudy = recentPostponementRequest.changes?.newSemesterOfStudy as number;
+
     const event: IEvent = {
+    type: EventTypes.INTERNSHIP_MODULE_POSTPONEMENT,
         creator: creator,
         accept: true,
         changes: {
+      newSemester: this.inSemester,
+      newSemesterOfStudy: this.inSemesterOfStudy,
             status: InternshipModuleStatuses.PLANNED,
         },
     };
     if (reason) event.comment = reason;
     this.events.push(event);
     this.status = InternshipModuleStatuses.PLANNED;
-    const recentPostponementRequest = this.events
-        .filter((e) => e.changes?.newSemester)
-        .reduce((event, next) => ((event.timestamp ?? 0) > (next.timestamp ?? 0) ? event : next));
-    this.inSemester = recentPostponementRequest.changes?.newSemester as string;
-    this.inSemesterOfStudy = recentPostponementRequest.changes?.newSemesterOfStudy as number;
 
     return this.save();
 };
@@ -163,6 +177,7 @@ InternshipModuleSchema.methods.rejectPostponement = async function (
     if (!user?.isAdmin) throw new Error("Only Admins may reject a postponement.");
 
     const event: IEvent = {
+    type: EventTypes.INTERNSHIP_MODULE_POSTPONEMENT,
         creator: creator,
         accept: false,
         changes: {
@@ -176,6 +191,36 @@ InternshipModuleSchema.methods.rejectPostponement = async function (
     return this.save();
 };
 
+InternshipModuleSchema.methods.editPostponement = async function (
+  creator: Types.ObjectId,
+  updatedProps: Record<string, unknown>
+): Promise<IInternshipModule> {
+  const user = await User.findById(creator);
+  if (!user?.isAdmin) throw new Error("Only Admins may accept a postponement.");
+
+  const recentPostponementRequest = this.getRecentPostponementRequest();
+  if (recentPostponementRequest.changes === undefined) recentPostponementRequest.changes = {};
+
+  const updatableProps = ["newSemester", "newSemesterOfStudy"];
+  for (const prop of updatableProps) {
+    if (updatedProps[prop] !== undefined) {
+      recentPostponementRequest.changes[prop] = updatedProps[prop];
+    }
+  }
+
+  if (updatedProps.reason !== undefined)
+    recentPostponementRequest.comment = updatedProps.reason as string;
+
+  this.markModified("events");
+  return this.save();
+};
+
+InternshipModuleSchema.methods.getRecentPostponementRequest = function (): IEvent {
+  return this.events
+    .filter((e) => e.changes?.newSemester)
+    .reduce((event, next) => ((event.timestamp ?? 0) > (next.timestamp ?? 0) ? event : next));
+};
+
 InternshipModuleSchema.methods.passAep = async function (creator: Types.ObjectId) {
     if (this.aepPassed) throw new Error("Aep has already been passed.");
 
@@ -183,6 +228,7 @@ InternshipModuleSchema.methods.passAep = async function (creator: Types.ObjectId
     if (!user?.isAdmin) throw new Error("Only Admins may declare the AEP as passed.");
 
     this.events.push({
+    type: EventTypes.INTERNSHIP_MODULE_UPDATE,
         creator: creator,
         changes: {
             aepPassed: true,
@@ -219,7 +265,8 @@ export async function trySetPassed(document: Document): Promise<boolean> {
     const statusIsPlanned = document.get("status") === InternshipModuleStatuses.PLANNED;
     if (statusIsPlanned && aepPassed && longEnough) {
         document.get("events").push({
-            creator: (await imimapAdmin)._id,
+      type: EventTypes.INTERNSHIP_MODULE_UPDATE,
+      creator: (await imimapAdmin)._id,
             changes: {
                 status: InternshipModuleStatuses.PASSED,
             },

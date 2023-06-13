@@ -4,7 +4,7 @@ import { Types } from "mongoose";
 import { InternshipModule, InternshipModuleStatuses } from "../mongooseModels/internshipModule";
 import { Postponement } from "../pgModels/postponement";
 import { imimapAdmin } from "../helpers/imimapAsAdminHelper";
-import { IEvent } from "../mongooseModels/event";
+import { EventTypes, IEvent } from "../mongooseModels/event";
 
 export default async function convertInternshipModules(
     completeInternships: CompleteInternship[],
@@ -27,6 +27,7 @@ export default async function convertInternshipModules(
             .map(p => ({
                 timestamp: p.timestamp.getTime(),
                 creator: admin._id,
+                type: EventTypes.INTERNSHIP_MODULE_POSTPONEMENT,
                 changes: {
                     newSemester: semesters[p.semesterId],
                     newSemesterOfStudy: p.semesterOfStudy

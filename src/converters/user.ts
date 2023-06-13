@@ -48,7 +48,7 @@ export default async function convertUsers(
             emailAddress: student.email,
             studentProfile: {
                 studentId: `s0${student.enrollmentNumber}`,
-                internshipsSeen: internshipsSeen,
+                companiesSeen: internshipsSeen,
                 internship: internshipModules.get(student.id)
             }
         };

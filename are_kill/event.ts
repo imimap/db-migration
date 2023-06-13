@@ -9,40 +9,40 @@ export enum EventTypes {
 }
 
 export interface IEvent {
-    timestamp?: number;
+  timestamp?: number;
   type: EventTypes;
-    creator: Types.ObjectId;
-    changes?: {
-        [key: string]: unknown;
-    };
-    accept?: boolean;
-    comment?: string;
+  creator: Types.ObjectId;
+  changes?: {
+    [key: string]: unknown;
+  };
+  accept?: boolean;
+  comment?: string;
 }
 
 export const EventSchema = new Schema({
-    timestamp: {
+  timestamp: {
     default: Date.now,
-        immutable: true,
-        type: Number,
+    immutable: true,
+    type: Number,
     required: true,
   },
   type: {
     type: String,
     required: true,
     enum: Object.values(EventTypes),
-    },
-    creator: {
-        immutable: true,
-        required: true,
-        type: Schema.Types.ObjectId,
-    },
-    changes: {
-        type: Schema.Types.Mixed,
-    },
-    accept: {
-        type: Boolean,
-    },
-    comment: {
-        type: String,
-    },
+  },
+  creator: {
+    immutable: true,
+    required: true,
+    type: Schema.Types.ObjectId,
+  },
+  changes: {
+    type: Schema.Types.Mixed,
+  },
+  accept: {
+    type: Boolean,
+  },
+  comment: {
+    type: String,
+  },
 });
