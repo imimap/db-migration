@@ -35,6 +35,10 @@ export default async function convertInternships(
             .map(i => programmingLanguages[i.programmingLanguageId]);
 
         // Get the current state of the internship
+        if(internship.id == 886){
+            console.error("wenzel: " +internship.companyAddressId);
+            
+        }
         const status = getInternshipStatus(internship);
         stateMap.set(status.valueOf(), (stateMap.get(status.valueOf()) ?? 0) + 1);
         let comp = companies.get(internship.companyAddressId);

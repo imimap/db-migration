@@ -84,15 +84,15 @@ async function migrate(db: Client) {
     // internship in it...
     const userMap = await createUsers(users, students, userCompanies, companyIdMap, internshipModuleIdMaps.userMap);
     //Remove internshipModules for which NO user was found
-    console.log(internshipModuleIdMaps);
-    for(let entry of internshipModuleIdMaps.userMap.values()){
-        let e = await InternshipModule.findById(entry)
-        //console.log(e);
-    }
-    for(let entry of internshipModuleIdMaps.userMap.keys()){
-        let student = students.find(s => (s.id === entry));
-        //console.log(student);
-    }
+    //console.log(internshipModuleIdMaps);
+    // for(let entry of internshipModuleIdMaps.userMap.values()){
+    //     let e = await InternshipModule.findById(entry)
+    //     //console.log(e);
+    // }
+    // for(let entry of internshipModuleIdMaps.userMap.keys()){
+    //     let student = students.find(s => (s.id === entry));
+    //     //console.log(student);
+    // }
     
 
 }

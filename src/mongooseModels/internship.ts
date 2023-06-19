@@ -226,21 +226,21 @@ InternshipSchema.pre("validate", function () {
 });
 
 InternshipSchema.pre("save", async function () {
-    if (this.isNew) {
-        this.set("status", InternshipStatuses.PLANNED);
-    }
+    // if (this.isNew) {
+    //     this.set("status", InternshipStatuses.PLANNED);
+    // }
 
-    // Update internship state if necessary
-    switch (this.status) {
-        case InternshipStatuses.PLANNED:
-        case InternshipStatuses.APPROVED:
-        case InternshipStatuses.REJECTED:
-            await trySetRequested(this);
-            break;
-        case InternshipStatuses.OVER:
-            await trySetReadyForGrading(this);
-            break;
-    }
+    // // Update internship state if necessary
+    // switch (this.status) {
+    //     case InternshipStatuses.PLANNED:
+    //     case InternshipStatuses.APPROVED:
+    //     case InternshipStatuses.REJECTED:
+    //         await trySetRequested(this);
+    //         break;
+    //     case InternshipStatuses.OVER:
+    //         await trySetReadyForGrading(this);
+    //         break;
+    // }
 });
 
 /*******************/

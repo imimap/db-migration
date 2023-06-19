@@ -52,7 +52,9 @@ export default async function convertCompanies(companies: OldCompany[], companyA
             newCompany.size = getCompanySize(company.numberEmployees);
 
         const companyDoc = await Company.create(newCompany);
-        newCompanies.set(company.id, companyDoc.id);
+        // new companies have companyAddress as KEY, because in internship conversion we ONLY have the 
+        // companyAddress.id as a reference NOT the company.id!!
+        newCompanies.set(companyAddress.id, companyDoc.id);
 
         log(++counter);
     }
