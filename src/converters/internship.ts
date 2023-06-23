@@ -15,7 +15,7 @@ export default async function convertInternships(
     internshipsProgrammingLangs: InternshipProgrammingLanguage[],
     paymentStates: string[]
 ): Promise<Map<number, Types.ObjectId>> {
-    let counter = 0;
+    let counter = 0, invalidCounter = 0;
     const log = createProgressLogger("Internship", internships.length);
     const newInternships = new Map<number, Types.ObjectId>();
     // State map is used for logging details about the migrated internships
@@ -35,12 +35,22 @@ export default async function convertInternships(
             .map(i => programmingLanguages[i.programmingLanguageId]);
 
         // Get the current state of the internship
+        if(internship.id == 886){
+            console.error("wenzel: " +internship.companyAddressId);
+            
+        }
         const status = getInternshipStatus(internship);
         stateMap.set(status.valueOf(), (stateMap.get(status.valueOf()) ?? 0) + 1);
-
+        let comp = companies.get(internship.companyAddressId);
+        if(!comp){
+            console.log("Company missing from Internship:" + internship.companyAddressId + " Faking with HTW Address!");
+            invalidCounter++;
+            //comp = companies.get(526);
+            continue;
+        }
         const newInternship = {
             oldId: internship.id,
-            company: companies.get(internship.companyAddressId),
+            company: comp,
             description: internship.description,
             tasks: internship.tasks,
             operationalArea: internship.operationalArea,
@@ -56,6 +66,7 @@ export default async function convertInternships(
         };
 
         const internshipDoc = await Internship.create(newInternship);
+        
         newInternships.set(internship.id, internshipDoc.id);
 
         // Add internship to internship module
@@ -67,7 +78,7 @@ export default async function convertInternships(
 
         log(++counter);
     }
-
+    console.log("counter: " + counter + " INVALID: " + invalidCounter);
     console.log("States:", stateMap);
 
     return newInternships;

@@ -6,6 +6,7 @@ services:
     image: postgres:alpine
     environment:
       - POSTGRES_PASSWORD=pass
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
     volumes:
       - ./init:/docker-entrypoint-initdb.d
       - postgres-data:/var/lib/postgresql/data
@@ -15,11 +16,14 @@ services:
   db-mongo:
     image: mongo:bionic
     ports:
-      - "27017:27017"
+      - "27019:27017"
     volumes:
       - mongo-data:/data/db
 
 volumes:
   postgres-data:
   mongo-data:
+    external: true
+    name: imimap21_db-data
+
 

@@ -23,7 +23,7 @@ export async function loadInternships(database: Client): Promise<Internship[]> {
             startDate = endDate;
             endDate = temp;
         }
-
+//console.log(row.internship_state_id);
         internships.push(new Internship(
             Number.parseInt(row.id),
             Number.parseInt(row.complete_internship_id),

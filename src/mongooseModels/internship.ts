@@ -5,7 +5,7 @@ import { Semester } from "../helpers/semesterHelper";
 import { getWeeksBetween, isValidDateRange, normalizeDate } from "../helpers/dateHelper";
 import { ICompany } from "./company";
 import { User } from "./user";
-import { EventSchema, IEvent } from "./event";
+import { EventSchema, EventTypes, IEvent } from "./event";
 import { imimapAdmin } from "../helpers/imimapAsAdminHelper";
 
 export enum InternshipStatuses {
@@ -164,7 +164,8 @@ export async function trySetRequested(document: Document) {
     if (complete && status === InternshipStatuses.PLANNED) {
         // If status is 'planned', set to 'requested'
         document.get("events").push({
-            creator: (await imimapAdmin)._id,
+      type: EventTypes.INTERNSHIP_UPDATE,
+      creator: (await imimapAdmin)._id,
             changes: {
                 status: InternshipStatuses.REQUESTED,
             },
@@ -173,7 +174,8 @@ export async function trySetRequested(document: Document) {
     } else if (!complete && status !== InternshipStatuses.PLANNED) {
         // Set status back to 'planned'
         document.get("events").push({
-            creator: (await imimapAdmin)._id,
+      type: EventTypes.INTERNSHIP_UPDATE,
+      creator: (await imimapAdmin)._id,
             changes: {
                 status: InternshipStatuses.PLANNED,
             },
@@ -192,7 +194,8 @@ export async function trySetReadyForGrading(document: Document) {
     if (!certificatePdf) return;
 
     document.get("events").push({
-        creator: (await imimapAdmin)._id,
+    type: EventTypes.INTERNSHIP_UPDATE,
+    creator: (await imimapAdmin)._id,
         changes: {
             status: InternshipStatuses.READY_FOR_GRADING,
         },
@@ -223,21 +226,21 @@ InternshipSchema.pre("validate", function () {
 });
 
 InternshipSchema.pre("save", async function () {
-    if (this.isNew) {
-        this.set("status", InternshipStatuses.PLANNED);
-    }
+    // if (this.isNew) {
+    //     this.set("status", InternshipStatuses.PLANNED);
+    // }
 
-    // Update internship state if necessary
-    switch (this.status) {
-        case InternshipStatuses.PLANNED:
-        case InternshipStatuses.APPROVED:
-        case InternshipStatuses.REJECTED:
-            await trySetRequested(this);
-            break;
-        case InternshipStatuses.OVER:
-            await trySetReadyForGrading(this);
-            break;
-    }
+    // // Update internship state if necessary
+    // switch (this.status) {
+    //     case InternshipStatuses.PLANNED:
+    //     case InternshipStatuses.APPROVED:
+    //     case InternshipStatuses.REJECTED:
+    //         await trySetRequested(this);
+    //         break;
+    //     case InternshipStatuses.OVER:
+    //         await trySetReadyForGrading(this);
+    //         break;
+    // }
 });
 
 /*******************/
@@ -265,6 +268,7 @@ InternshipSchema.methods.approve = async function (creator: Types.ObjectId) {
         throw new Error("Internship is not ready for approval yet");
 
     this.events.push({
+    type: EventTypes.INTERNSHIP_UPDATE,
         creator: user._id,
         accept: true,
     });
@@ -282,6 +286,7 @@ InternshipSchema.methods.reject = async function (creator: Types.ObjectId) {
         throw new Error("Internship is not ready for approval yet");
 
     this.events.push({
+    type: EventTypes.INTERNSHIP_UPDATE,
         creator: user._id,
         accept: false,
     });
@@ -299,6 +304,7 @@ InternshipSchema.methods.markAsOver = async function (creator: Types.ObjectId) {
         );
 
     this.events.push({
+    type: EventTypes.INTERNSHIP_UPDATE,
         creator: user._id,
         changes: {
             status: InternshipStatuses.OVER,
@@ -327,6 +333,7 @@ InternshipSchema.methods.pass = async function (creator: Types.ObjectId) {
         throw new Error("Internship is not ready for grading yet");
 
     this.events.push({
+    type: EventTypes.INTERNSHIP_UPDATE,
         creator: user._id,
         changes: {
             status: InternshipStatuses.PASSED,

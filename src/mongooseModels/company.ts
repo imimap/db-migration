@@ -74,7 +74,12 @@ CompanySchema.pre("validate", function () {
     if (this.modifiedPaths().includes("website")) {
         let givenUrl = this.get("website");
         if (!/http/.test(givenUrl)) givenUrl = "https://" + givenUrl;
-        this.set("website", new URL(givenUrl).href);
+        try {
+            this.set("website", new URL(givenUrl).href);            
+        } catch (error) {
+            console.log("Company URL not correct: " + givenUrl);
+            
+        }
     }
 });
 
