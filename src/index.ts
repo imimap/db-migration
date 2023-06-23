@@ -6,7 +6,7 @@ import { loadStudents } from "./loaders/student";
 import { loadCompleteInternships } from "./loaders/completeInternship";
 import { loadInternships } from "./loaders/internship";
 import convertCompanies from "./converters/company";
-import { connect, disconnect } from "mongoose";
+import { connect, createConnection, disconnect } from "mongoose";
 import convertInternshipModules from "./converters/internshipModule";
 import { loadSemesters } from "./loaders/semester";
 import convertInternships from "./converters/internship";
@@ -19,17 +19,40 @@ import { loadInternshipsProgrammingLanguages } from "./loaders/internshipProgram
 import { loadPaymentStates } from "./loaders/paymentState";
 import { InternshipModule } from "./mongooseModels/internshipModule";
 
-// Load db config from .env file
+const readline = require('readline');
+
+function askQuestion(query :String) {
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout,
+    });
+
+    return new Promise(resolve => rl.question(query, (ans: any) => {
+        rl.close();
+        resolve(ans);
+    }))
+}
+
+
 config();
 
 // Run this script asynchronously
 run().catch(console.error);
 
 async function run() {
+    const ans = await askQuestion("Are you sure you want to irrevocably DELETE DB imimap? (y/N) ");
+    if(ans !=='y') process.exit();
+
+    // Load db config from .env file
     // Connect to Postgres
     const db = new Client();
     await db.connect();
-    // Connect to MongoDB
+    const conn = createConnection('mongodb://localhost:27019/imimap');
+    // Deletes the entire 'mydb' database
+    await conn.dropDatabase();
+    await conn.close();
+
+    // Connect to MongoDB again
     await connect("mongodb://localhost:27019/imimap", {
         useNewUrlParser: true,
         useUnifiedTopology: true,

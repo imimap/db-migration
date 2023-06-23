@@ -35,7 +35,21 @@ export default async function convertInternshipModules(
                 accept: p.approved,
                 comment: p.reason
             } as IEvent));
-
+        const status = getInternshipModuleStatus(internship, postponementList);
+        if(status !== InternshipModuleStatuses.POSTPONEMENT_REQUESTED){
+            //DS something is planned or even finished ==> create planned event!!
+            postponementList.push({
+                type: EventTypes.INTERNSHIP_MODULE_UPDATE,
+                creator: new Types.ObjectId('0000a0000000000000000000'),
+                accept: true,
+                changes: {
+                  newSemester: "SS2023",
+                  newSemesterOfStudy: 4,
+                  aepPassed: false,
+                  status: InternshipModuleStatuses.PLANNED,
+                },
+              });
+            }
         const internshipModule = {
             oldId: internship.id,
             aepPassed: internship.aep,
@@ -43,9 +57,9 @@ export default async function convertInternshipModules(
             inSemesterOfStudy: internship.semesterOfStudy,
             internships: [],
             events: postponementList,
-            status: getInternshipModuleStatus(internship, postponementList)
+            status
         };
-
+            
         const internshipModuleDoc = await InternshipModule.create(internshipModule);
         internshipModules.set(internship.id, internshipModuleDoc.id);
         internshipUserMap.set(internship.studentId, internshipModuleDoc.id);

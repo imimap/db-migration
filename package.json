@@ -4,7 +4,7 @@
   "description": "Script for migrating the Postgres database of the old IMI-Map to a MongoDB for the new IMI-Map",
   "main": "index.js",
   "scripts": {
-    "migrate": "tsc && node build/index.js"
+    "migrate": "tsc && node --inspect build/index.js"
   },
   "repository": {
     "type": "git",

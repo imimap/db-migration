@@ -5,3 +5,5 @@ build/
 
 **/*.sql
 db-dump_withadmin.gz
+db-dump2.gz
+db-dump2023.gz
